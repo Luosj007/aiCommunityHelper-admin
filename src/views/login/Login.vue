@@ -84,23 +84,29 @@ const refreshCaptcha = () => {
   const charCount = 4;
   const width = 100;
   const height = 40;
-  
+
   canvas.width = width;
   canvas.height = height;
 
   generatedCaptcha.value = "";
   for (let i = 0; i < charCount; i++) {
-    generatedCaptcha.value += chars.charAt(Math.floor(Math.random() * chars.length));
+    generatedCaptcha.value += chars.charAt(
+      Math.floor(Math.random() * chars.length)
+    );
   }
 
   // 绘制背景
-  ctx.fillStyle = `rgb(${180 + Math.random() * 50}, ${200 + Math.random() * 30}, ${180 + Math.random() * 50})`;
+  ctx.fillStyle = `rgb(${180 + Math.random() * 50}, ${
+    200 + Math.random() * 30
+  }, ${180 + Math.random() * 50})`;
   ctx.fillRect(0, 0, width, height);
 
   // 绘制干扰线
   for (let i = 0; i < 5; i++) {
     ctx.beginPath();
-    ctx.strokeStyle = `rgb(${120 + Math.random() * 80}, ${150 + Math.random() * 80}, ${120 + Math.random() * 80})`;
+    ctx.strokeStyle = `rgb(${120 + Math.random() * 80}, ${
+      150 + Math.random() * 80
+    }, ${120 + Math.random() * 80})`;
     ctx.lineWidth = Math.random() * 1.5 + 0.5;
     ctx.moveTo(Math.random() * width, Math.random() * height);
     ctx.lineTo(Math.random() * width, Math.random() * height);
@@ -109,9 +115,17 @@ const refreshCaptcha = () => {
 
   // 绘制干扰点
   for (let i = 0; i < 30; i++) {
-    ctx.fillStyle = `rgb(${100 + Math.random() * 100}, ${130 + Math.random() * 100}, ${100 + Math.random() * 100})`;
+    ctx.fillStyle = `rgb(${100 + Math.random() * 100}, ${
+      130 + Math.random() * 100
+    }, ${100 + Math.random() * 100})`;
     ctx.beginPath();
-    ctx.arc(Math.random() * width, Math.random() * height, Math.random() * 1 + 0.5, 0, 2 * Math.PI);
+    ctx.arc(
+      Math.random() * width,
+      Math.random() * height,
+      Math.random() * 1 + 0.5,
+      0,
+      2 * Math.PI
+    );
     ctx.fill();
   }
 
@@ -120,7 +134,9 @@ const refreshCaptcha = () => {
     const char = generatedCaptcha.value.charAt(i);
     const fontSize = Math.random() * 10 + 20;
     ctx.font = `${fontSize}px Arial, sans-serif`;
-    ctx.fillStyle = `rgb(${30 + Math.random() * 80}, ${60 + Math.random() * 80}, ${30 + Math.random() * 80})`;
+    ctx.fillStyle = `rgb(${30 + Math.random() * 80}, ${
+      60 + Math.random() * 80
+    }, ${30 + Math.random() * 80})`;
     ctx.save();
     ctx.translate(20 * i + 15, height / 2 + fontSize / 4);
     ctx.rotate((Math.random() - 0.5) * 0.5);
@@ -133,34 +149,31 @@ onMounted(() => {
   refreshCaptcha();
 });
 
-// 登录表单
 const loginForm = ref({
   username: "",
   password: "",
   verifyCode: "",
 });
 
-// ========== 核心修改：验证码大小写不敏感 ==========
 const loginRules = ref({
-  username: [{ required: true, message: "请输入账户", trigger: "blur" }],
+  username: [{ required: true, message: "未输入账户信息", trigger: "blur" }],
   password: [
-    { required: true, message: "请输入密码", trigger: "blur" },
+    { required: true, message: "未输入密码", trigger: "blur" },
     { min: 6, message: "密码长度不少于6位", trigger: "blur" },
   ],
   verifyCode: [
-    { required: true, message: "请输入验证码", trigger: "blur" },
-    { 
+    { required: true, message: "未输入验证码", trigger: "blur" },
+    {
       validator: (rule, value, callback) => {
-        // 转成小写后比较，实现大小写不敏感
         if (value.toLowerCase() !== generatedCaptcha.value.toLowerCase()) {
           callback(new Error("验证码输入错误"));
         } else {
           callback();
         }
       },
-      trigger: "blur"
-    }
-  ]
+      trigger: "blur",
+    },
+  ],
 });
 
 const loginFormRef = ref(null);
@@ -170,7 +183,7 @@ const handleLogin = async () => {
   try {
     await loginFormRef.value.validate();
   } catch (err) {
-    ElMessage.warning("请完善登录信息");
+    ElMessage.warning("密码或验证码错误");
     return;
   }
 
@@ -201,7 +214,6 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-/* 样式部分完全不变 */
 .login-bg {
   position: fixed;
   top: 0;
@@ -245,7 +257,7 @@ const handleLogin = async () => {
 }
 
 .form-item {
-  margin-bottom: 20px !important;
+  margin-bottom: 25px !important;
 }
 
 .form-label {
@@ -267,7 +279,7 @@ const handleLogin = async () => {
 :deep(.account-input .el-input__wrapper),
 :deep(.pwd-input .el-input__wrapper) {
   background: rgba(255, 255, 255, 0.9);
-  border: 2px solid #4CAF50 !important;
+  border: 2px solid #4caf50 !important;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(76, 175, 80, 0.08);
   padding: 0 15px;
@@ -275,7 +287,7 @@ const handleLogin = async () => {
 }
 :deep(.account-input .el-input__wrapper:hover),
 :deep(.pwd-input .el-input__wrapper:hover) {
-  border-color: #388E3C !important;
+  border-color: #388e3c !important;
   box-shadow: 0 4px 8px rgba(76, 175, 80, 0.12);
 }
 :deep(.account-input .el-input__inner),
@@ -286,7 +298,7 @@ const handleLogin = async () => {
 
 :deep(.code-input .el-input__wrapper) {
   background: rgba(255, 255, 255, 0.9);
-  border: 2px solid #2196F3 !important;
+  border: 2px solid #2196f3 !important;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(33, 150, 243, 0.08);
   padding: 0 15px;
@@ -294,7 +306,7 @@ const handleLogin = async () => {
   transition: all 0.2s ease;
 }
 :deep(.code-input .el-input__wrapper:hover) {
-  border-color: #1976D2 !important;
+  border-color: #1976d2 !important;
   box-shadow: 0 4px 8px rgba(33, 150, 243, 0.12);
 }
 :deep(.code-input .el-input__inner) {
@@ -336,13 +348,13 @@ const handleLogin = async () => {
   font-size: 18px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(90deg, #4CAF50, #2196F3);
+  background: linear-gradient(90deg, #4caf50, #2196f3);
   color: #fff;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
   transition: all 0.3s ease;
 }
 :deep(.login-btn:hover) {
-  background: linear-gradient(90deg, #388E3C, #1976D2);
+  background: linear-gradient(90deg, #388e3c, #1976d2);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(76, 175, 80, 0.25);
 }
@@ -357,16 +369,17 @@ const handleLogin = async () => {
 
 :deep(.account-input .el-input__prefix),
 :deep(.pwd-input .el-input__prefix) {
-  color: #4CAF50;
+  color: #4caf50;
 }
 :deep(.code-input .el-input__prefix) {
-  color: #2196F3;
+  color: #2196f3;
 }
 
 :deep(.el-form-item__error) {
-  color: #F44336;
+  color: #f44336;
   font-size: 12px;
   margin-top: 4px;
+  margin-left: 80px;
 }
 
 @media (max-width: 480px) {

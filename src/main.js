@@ -4,6 +4,7 @@ import App from './App.vue'
 
 // 1. Element Plus（UI库）
 import ElementPlus from 'element-plus'
+import { zhCn } from 'element-plus/es/locales.mjs'
 import 'element-plus/dist/index.css'
 // 2. Element Plus图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
@@ -20,7 +21,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 // 挂载所有依赖
-app.use(ElementPlus)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 app.use(createPinia())
 app.use(router)
 
