@@ -6,7 +6,7 @@
         <el-form-item label="工单ID">
           <el-input
             v-model.number="searchForm.id"
-            placeholder="输入ID精确搜索"
+            placeholder="请输入ID"
             clearable
             style="width: 150px"
           />
@@ -14,7 +14,7 @@
         <el-form-item label="工单状态">
           <el-select
             v-model="searchForm.statusText"
-            placeholder="选择状态精确搜索"
+            placeholder="请选择状态"
             clearable
             style="width: 150px"
           >
@@ -26,7 +26,7 @@
         <el-form-item label="工单内容">
           <el-input
             v-model="searchForm.content"
-            placeholder="输入内容模糊搜索"
+            placeholder="请输入内容"
             clearable
             style="width: 250px"
           />
@@ -99,14 +99,16 @@
         ref="dialogFormRef"
         label-width="80px"
       >
+        <!-- 工单编号（只显示，用户不填写） -->
         <el-form-item label="工单编号">
           <template v-if="dialogType === 'add'">
-            <el-input :value="'提交后自动生成'" disabled />
+            <el-input :value="dialogForm.orderNo || '提交后自动生成'" disabled />
           </template>
           <template v-else>
             <el-input :value="dialogForm.orderNo" disabled />
           </template>
         </el-form-item>
+        <!-- 用户选择状态 -->
         <el-form-item label="工单状态" prop="statusText">
           <el-select v-model="dialogForm.statusText" placeholder="请选择工单状态">
             <el-option label="待处理" value="待处理"></el-option>
@@ -114,6 +116,18 @@
             <el-option label="已完成" value="已完成"></el-option>
           </el-select>
         </el-form-item>
+        
+        <!-- 用户填写内容 -->
+        <el-form-item label="工单内容" prop="content">
+          <el-input
+            v-model="dialogForm.content"
+            type="textarea"
+            rows="5"
+            placeholder="请输入工单内容"
+          />
+        </el-form-item>
+        
+        <!-- 发布时间（只显示） -->
         <el-form-item label="发布时间">
           <template v-if="dialogType === 'add'">
             <el-input :value="'提交后自动生成'" disabled />
@@ -122,16 +136,10 @@
             <el-input :value="formatDate(dialogForm.createdAt)" disabled />
           </template>
         </el-form-item>
+        
+        <!-- 更新时间（编辑时显示） -->
         <el-form-item label="更新时间" v-if="dialogType === 'edit'">
           <el-input :value="formatDate(dialogForm.updatedAt)" disabled />
-        </el-form-item>
-        <el-form-item label="工单内容" prop="content">
-          <el-input
-            v-model="dialogForm.content"
-            type="textarea"
-            rows="5"
-            placeholder="请输入工单内容"
-          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -145,14 +153,27 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import workOrderApi from '@/api/workOrder'; // 对应工单API文件
+import workOrderApi from '@/api/workOrder';
+
+const statusMap = {
+  '待处理': 'pending',
+  '处理中': 'process', 
+  '已完成': 'done'
+};
+
+// 生成工单编号
+const generateOrderNo = () => {
+  const timestamp = new Date().getTime();
+  const random = Math.floor(Math.random() * 1000);
+  return `WX${timestamp}${random}`;
+};
 
 // 列表与加载状态
 const loading = ref(false);
 const workOrderList = ref([]);
 const total = ref(0);
 
-// 搜索表单（支持ID精确、状态精确、内容模糊）
+// 搜索表单
 const searchForm = reactive({
   id: '',
   statusText: '',
@@ -180,7 +201,7 @@ const dialogRules = reactive({
   content: [{ required: true, message: '请输入工单内容', trigger: 'blur' }]
 });
 
-// 获取工单列表（含前端过滤+分页）
+// 获取工单列表
 const getWorkOrderList = async () => {
   loading.value = true;
   try {
@@ -189,13 +210,13 @@ const getWorkOrderList = async () => {
     const extractList = (r) => Array.isArray(r.list) ? r.list : Array.isArray(r) ? r : [];
     let fullList = extractList(data);
 
-    // 尝试获取全量数据用于前端过滤（兼容后端分页）
+    // 尝试获取全量数据用于前端过滤
     if (data.list?.length < data.total) {
       const fullRes = await workOrderApi.getWorkOrderList({ page: 1, size: data.total });
       fullList = extractList(fullRes.data || fullRes);
     }
 
-    // 前端过滤：ID精确、状态精确、内容模糊
+    // 前端过滤
     let filtered = [...fullList];
     if (searchForm.id) filtered = filtered.filter(item => String(item.id) === String(searchForm.id));
     if (searchForm.statusText) filtered = filtered.filter(item => item.statusText === searchForm.statusText);
@@ -239,10 +260,12 @@ const resetSearch = () => {
 const openAddDialog = () => {
   dialogType.value = 'add';
   resetDialogForm();
+  // 新增时预生成工单编号（让用户能看到）
+  dialogForm.orderNo = generateOrderNo();
   dialogVisible.value = true;
 };
 
-// 打开编辑弹窗（回显详情）
+// 打开编辑弹窗
 const openEditDialog = async (row) => {
   dialogType.value = 'edit';
   dialogVisible.value = true;
@@ -258,7 +281,7 @@ const openEditDialog = async (row) => {
 // 重置弹窗表单
 const resetDialogForm = () => {
   dialogForm.id = '';
-  dialogForm.orderNo = '';    
+  dialogForm.orderNo = '';
   dialogForm.statusText = '';
   dialogForm.content = '';
   dialogForm.createdAt = null;
@@ -266,17 +289,30 @@ const resetDialogForm = () => {
   dialogFormRef.value?.clearValidate();
 };
 
-// 提交新增/编辑
+// 提交新增/编辑（核心修复）
 const handleSubmit = async () => {
-  await dialogFormRef.value.validate();
+  // 表单校验
   try {
-    const payload = { statusText: dialogForm.statusText, content: dialogForm.content };
+    await dialogFormRef.value.validate();
+  } catch (err) {
+    return; // 校验失败不提交
+  }
+
+  try {
+    // 用户只需要选状态和填内容，其他字段前端自动补全
+    const payload = {
+      order_no: dialogForm.orderNo, 
+      status: statusMap[dialogForm.statusText],
+      status_text: dialogForm.statusText, 
+      content: dialogForm.content 
+    };
+
     if (dialogType.value === 'add') {
       await workOrderApi.addWorkOrder(payload);
-      ElMessage.success('新增工单成功');
+      ElMessage.success('新增成功');
     } else {
       await workOrderApi.updateWorkOrder(dialogForm.id, payload);
-      ElMessage.success('编辑工单成功');
+      ElMessage.success('编辑成功');
     }
     dialogVisible.value = false;
     getWorkOrderList();
@@ -287,10 +323,20 @@ const handleSubmit = async () => {
 
 // 删除工单
 const handleDelete = async (id) => {
-  await ElMessageBox.confirm('确定删除该工单吗？', '提示', { type: 'warning' });
-  await workOrderApi.deleteWorkOrder(id);
-  ElMessage.success('删除成功');
-  getWorkOrderList();
+  try {
+    await ElMessageBox.confirm('确定删除该工单吗？', 
+    '提示', 
+    { 
+      type: 'warning',
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
+    });
+    await workOrderApi.deleteWorkOrder(id);
+    ElMessage.success('删除成功');
+    getWorkOrderList();
+  } catch (err) {
+    ElMessage.info('已取消');
+  }
 };
 
 // 分页事件
@@ -303,8 +349,9 @@ const handleCurrentChange = (val) => {
   getWorkOrderList();
 };
 
-// 挂载时初始化列表
-onMounted(() => getWorkOrderList());
+onMounted(() => {
+  getWorkOrderList();
+});
 </script>
 
 <style scoped>

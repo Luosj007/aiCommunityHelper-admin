@@ -6,7 +6,7 @@
         <el-form-item label="通知ID">
           <el-input
             v-model.number="searchForm.id"
-            placeholder="输入ID精确搜索"
+            placeholder="请输入ID"
             clearable
             style="width: 150px"
           />
@@ -14,7 +14,7 @@
         <el-form-item label="通知标题">
           <el-input
             v-model="searchForm.title"
-            placeholder="输入标题模糊搜索"
+            placeholder="请输入标题"
             clearable
             style="width: 250px"
           />
@@ -188,11 +188,9 @@ const getNoticeList = async () => {
           fullList = extractList(data);
         }
       } else {
-        // 后端返回的 list 已包含全部数据
         fullList = extractList(data);
       }
     } else {
-      // 后端未返回分页结构，视为返回全量数组或对象
       fullList = extractList(data);
     }
     // 在完整列表上做前端搜索过滤：id 精确，title 模糊（不区分大小写）
@@ -206,9 +204,6 @@ const getNoticeList = async () => {
       filtered = filtered.filter(item => (item.title || '').toLowerCase().includes(titleLower));
     }
 
-    // 按ID升序排序
-    // filtered.sort((a, b) => Number(a.id) - Number(b.id));
-
     // 客户端分页展示并设置 total
     total.value = filtered.length;
     const start = (Math.max(1, searchForm.page) - 1) * searchForm.size;
@@ -221,7 +216,7 @@ const getNoticeList = async () => {
   }
 };
 
-// 时间格式化工具函数
+// 时间格式化
 const formatDate = (val) => {
   if (!val) return '';
   const d = new Date(val);
@@ -308,15 +303,18 @@ const handleSubmit = async () => {
 const handleDelete = async (id) => {
   try {
     await ElMessageBox.confirm(
-      '确定要删除该通知吗？',
-      '提示',
-      { type: 'warning', confirmButtonText: '确认', cancelButtonText: '取消' }
-    );
+    '确定要删除该通知吗？',
+    '提示',
+    { 
+      type: 'warning',
+      confirmButtonText: '确认', 
+      cancelButtonText: '取消' 
+    });
     await noticeApi.deleteNotice(id);
     ElMessage.success('删除通知成功');
     getNoticeList(); 
   } catch (err) {
-    ElMessage.info('已取消删除');
+    ElMessage.info('已取消');
   }
 };
 
