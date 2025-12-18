@@ -27,7 +27,6 @@
       <el-button type="success" @click="openAddDialog">新增通知</el-button>
     </div>
 
-    <!-- 通知列表 -->
     <el-table
       :data="noticeList"
       border
@@ -38,10 +37,16 @@
       <el-table-column prop="id" label="ID" width="80" align="center" />
       <el-table-column prop="title" label="通知标题" min-width="200" />
       <el-table-column prop="content" label="通知内容" min-width="300" />
-      <el-table-column prop="time" label="发布时间" width="180" align="center" />
-      <el-table-column prop="createdAt" label="创建时间" width="180" align="center" />
-      <el-table-column prop="updatedAt" label="更新时间" width="180" align="center" />
-      <!-- 操作列 -->
+      <el-table-column prop="createdAt" label="发布时间" width="180" align="center">
+        <template #default="{ row }">
+          {{ formatDate(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="updatedAt" label="更新时间" width="180" align="center">
+        <template #default="{ row }">
+          {{ formatDate(row.updatedAt) }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="180" align="center">
         <template #default="scope">
           <el-button
@@ -92,13 +97,18 @@
         <el-form-item label="通知标题" prop="title">
           <el-input v-model="dialogForm.title" placeholder="请输入通知标题" />
         </el-form-item>
-        <el-form-item label="发布时间" prop="time">
-          <el-date-picker
-            v-model="dialogForm.time"
-            type="datetime"
-            placeholder="选择发布时间"
-            style="width: 100%;"
-          />
+        <el-form-item label="发布时间">
+          <template v-if="dialogType === 'add'">
+            <el-input :value="'提交后自动生成'" disabled />
+          </template>
+          <template v-else>
+            <el-input :value="formatDate(dialogForm.createdAt)" disabled />
+          </template>
+        </el-form-item>
+
+        <!-- 更新时间：仅编辑时展示，不可改 -->
+        <el-form-item label="更新时间" v-if="dialogType === 'edit'">
+          <el-input :value="formatDate(dialogForm.updatedAt)" disabled />
         </el-form-item>
         <el-form-item label="通知内容" prop="content">
           <el-input
@@ -142,17 +152,16 @@ const searchForm = reactive({
 const dialogVisible = ref(false);
 const dialogType = ref('add'); 
 const dialogFormRef = ref(null);
-// 弹窗表单
 const dialogForm = reactive({
   id: '',
   title: '',
   content: '',
-  time: null 
+  createdAt: null,
+  updatedAt: null
 });
 
 const dialogRules = reactive({
   title: [{ required: true, message: '请输入通知标题', trigger: 'blur' }],
-  time: [{ required: true, message: '请选择发布时间', trigger: 'change' }],
   content: [{ required: true, message: '请输入通知内容', trigger: 'blur' }]
 });
 
@@ -160,7 +169,6 @@ const dialogRules = reactive({
 const getNoticeList = async () => {
   loading.value = true;
   try {
-    // 先请求
     const res = await noticeApi.getNoticeList(searchForm);
     const data = res.data || {};
     const hasList = Array.isArray(data.list);
@@ -187,7 +195,6 @@ const getNoticeList = async () => {
       // 后端未返回分页结构，视为返回全量数组或对象
       fullList = extractList(data);
     }
-
     // 在完整列表上做前端搜索过滤：id 精确，title 模糊（不区分大小写）
     let filtered = Array.isArray(fullList) ? fullList.slice() : [];
     if (searchForm.id !== '' && searchForm.id !== null && searchForm.id !== undefined) {
@@ -199,8 +206,8 @@ const getNoticeList = async () => {
       filtered = filtered.filter(item => (item.title || '').toLowerCase().includes(titleLower));
     }
 
-    // 对过滤后的列表按 id 做数值升序排序
-    filtered.sort((a, b) => Number(a.id) - Number(b.id));
+    // 按ID升序排序
+    // filtered.sort((a, b) => Number(a.id) - Number(b.id));
 
     // 客户端分页展示并设置 total
     total.value = filtered.length;
@@ -214,6 +221,15 @@ const getNoticeList = async () => {
   }
 };
 
+// 时间格式化工具函数
+const formatDate = (val) => {
+  if (!val) return '';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
 // 2. 重置搜索条件
 const resetSearch = () => {
   searchForm.id = '';
@@ -225,30 +241,23 @@ const resetSearch = () => {
 // 3. 打开新增弹窗
 const openAddDialog = () => {
   dialogType.value = 'add';
-  dialogForm.time = new Date();
+  dialogForm.createdAt = null;
+  dialogForm.updatedAt = null;
   dialogVisible.value = true;
 };
 
-// 4. 打开编辑弹窗
+// 4. 打开编辑弹窗（回显发布时间和更新时间）
 const openEditDialog = async (row) => {
   dialogType.value = 'edit';
   dialogVisible.value = true;
-  // 获取详情并回显
   try {
     const res = await noticeApi.getNoticeDetail(row.id);
     dialogForm.id = res.data.id;
     dialogForm.title = res.data.title;
     dialogForm.content = res.data.content;
-    // 回显 time：若后端返回字符串，转为 Date；若已为 Date 则直接赋值
-    if (res.data.time) {
-      try {
-        dialogForm.time = new Date(res.data.time);
-      } catch {
-        dialogForm.time = res.data.time;
-      }
-    } else {
-      dialogForm.time = null;
-    }
+    // 回显发布时间和更新时间
+    dialogForm.createdAt = res.data.createdAt 
+    dialogForm.updatedAt = res.data.updatedAt 
   } catch (err) {
     ElMessage.error('获取详情失败');
   }
@@ -259,7 +268,8 @@ const resetDialogForm = () => {
   dialogForm.id = '';
   dialogForm.title = '';
   dialogForm.content = '';
-  dialogForm.time = null;
+  dialogForm.createdAt = null;
+  dialogForm.updatedAt = null;
   if (dialogFormRef.value) {
     dialogFormRef.value.clearValidate(); 
   }
@@ -275,10 +285,10 @@ const handleSubmit = async () => {
   }
 
   try {
-    // 提交前将 time 转为后端可接受的字符串（若为 Date）
+    // 仅传递标题和内容，时间字段由后端Sequelize自动生成/更新
     const payload = {
-      ...dialogForm,
-      time: dialogForm.time instanceof Date ? dialogForm.time.toISOString() : dialogForm.time
+      title: dialogForm.title,
+      content: dialogForm.content
     };
     if (dialogType.value === 'add') {
       await noticeApi.addNotice(payload);
