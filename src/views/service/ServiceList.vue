@@ -44,12 +44,12 @@
       style="width: 100%; margin-top: 10px"
     >
       <el-table-column prop="id" label="ID" width="80" align="center" />
-      <el-table-column label="服务图片" width="120" align="center">
+      <el-table-column prop="img" label="图片" width="120" align="center">
         <template #default="{ row }">
           <el-image
             v-if="row.img"
-            :src="row.img"
-            :preview-src-list="[row.img]"
+            :src="BASE_URL + row.img"
+            :preview-src-list="[BASE_URL + row.img]"
             fit="cover"
             style="width: 80px; height: 60px; border-radius: 4px;"
           />
@@ -111,14 +111,23 @@
         label-width="100px"
       >
         <el-form-item label="服务图片" prop="img">
-          <el-input
-            v-model="dialogForm.img"
-            placeholder="请输入图片URL路径"
-            clearable
-          />
-          <div class="form-tip">提示：请输入完整的图片URL地址</div>
+          <el-upload
+            class="upload-demo"
+            :show-file-list="false"
+            :http-request="handleUpload"
+            accept="image/*"
+          >
+            <el-button type="primary">上传图片</el-button>
+          </el-upload>
+
+          <div v-if="dialogForm.img" style="margin-top: 10px">
+            <el-image
+              :src="BASE_URL + dialogForm.img"
+              style="width: 100px; height: 80px"
+              fit="cover"
+            />
+          </div>
         </el-form-item>
-        
         <el-form-item label="服务名称" prop="name">
           <el-input
             v-model="dialogForm.name"
@@ -126,7 +135,6 @@
             clearable
           />
         </el-form-item>
-        
         <el-form-item label="服务描述" prop="desc">
           <el-input
             v-model="dialogForm.desc"
@@ -195,6 +203,18 @@
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import serviceApi from '@/api/service';
+const BASE_URL = 'http://localhost:7001';
+
+const handleUpload = async (options) => {
+  try {
+    const res = await serviceApi.uploadServiceImg(options.file);
+    dialogForm.img = res.data.url;
+    ElMessage.success('图片上传成功');
+  } catch (err) {
+    ElMessage.error('图片上传失败');
+  }
+};
+
 
 // 列表与加载状态
 const loading = ref(false);

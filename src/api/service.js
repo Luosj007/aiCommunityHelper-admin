@@ -1,6 +1,20 @@
 import request from '@/utils/request';
 
 export default {
+  uploadServiceImg(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return request({
+      url: '/admin/upload/serviceImg',
+      method: 'post',
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+
   getServiceList(params) {
     return request({
       url: '/admin/services', 
