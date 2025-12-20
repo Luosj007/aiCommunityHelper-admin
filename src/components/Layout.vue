@@ -3,7 +3,7 @@
     <!-- 侧边栏区域 -->
     <div class="sidebar-container">
       <div class="sidebar-header">
-        <h2 class="sidebar-title">社区助手管理系统</h2>
+        <h2 class="sidebar-title">慧邻帮后台管理系统</h2>
       </div>
       <el-menu
         default-active="/home"
@@ -52,10 +52,8 @@
       </el-menu>
     </div>
 
-    <!-- 主内容区域 -->
     <div class="main-content">
       <div class="navbar-container">
-        <!-- 核心修改：面包屑动态渲染 -->
         <el-breadcrumb class="breadcrumb" separator="/">
           <el-breadcrumb-item 
             v-for="item in breadcrumbList" 
@@ -84,7 +82,7 @@
 // 1. 导入依赖
 import { ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { ElMessage, ElMessageBox } from "element-plus"; // 新增ElMessageBox
+import { ElMessage, ElMessageBox } from "element-plus"; 
 import {
   House,
   List,

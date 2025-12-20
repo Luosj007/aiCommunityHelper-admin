@@ -1,22 +1,22 @@
 <template>
   <div class="home-container">
-    <h1 class="page-title">社区助手管理系统 - 数据可视化</h1>
+    <h1 class="page-title">慧邻帮后台管理系统——数据可视化</h1>
     
-    <!-- 图表容器：三栏布局（响应式） -->
+    <!-- 图表容器：三栏布局 -->
     <div class="charts-wrapper">
-      <!-- 1. 报修类型占比（饼图） -->
+      <!-- 1. 报修类型占比 -->
       <div class="chart-card">
         <h3 class="chart-title">报修类型占比</h3>
         <div ref="repairChart" class="chart-box"></div>
       </div>
 
-      <!-- 2. 垃圾分类识别次数（柱状图） -->
+      <!-- 2. 垃圾分类识别次数 -->
       <div class="chart-card">
         <h3 class="chart-title">垃圾分类识别次数</h3>
         <div ref="garbageChart" class="chart-box"></div>
       </div>
 
-      <!-- 3. 热门问答TOP10（横向柱状图） -->
+      <!-- 3. 热门问答TOP10 -->
       <div class="chart-card full-width">
         <h3 class="chart-title">热门问答TOP10</h3>
         <div ref="qaChart" class="chart-box qa-chart"></div>
