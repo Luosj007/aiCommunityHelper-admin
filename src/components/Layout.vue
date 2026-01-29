@@ -3,7 +3,7 @@
     <!-- 侧边栏区域 -->
     <div class="sidebar-container">
       <div class="sidebar-header">
-        <h2 class="sidebar-title">慧邻帮后台管理系统</h2>
+        <h2 class="sidebar-title">智邻助手后台管理系统</h2>
       </div>
       <el-menu
         default-active="/home"

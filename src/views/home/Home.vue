@@ -1,6 +1,6 @@
 <template>
   <div class="home-container">
-    <h1 class="page-title">慧邻帮后台管理系统——数据可视化</h1>
+    <h1 class="page-title">智邻助手数据可视化</h1>
     
     <!-- 图表容器：三栏布局 -->
     <div class="charts-wrapper">

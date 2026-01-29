@@ -1,7 +1,7 @@
 <template>
   <div class="login-bg">
     <div class="login-form-container">
-      <h2 class="login-title">慧邻帮后台管理系统</h2>
+      <h2 class="login-title">智邻助手后台管理系统</h2>
       <el-form
         :model="loginForm"
         :rules="loginRules"
