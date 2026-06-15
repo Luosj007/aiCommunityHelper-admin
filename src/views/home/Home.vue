@@ -52,21 +52,21 @@ const repairData = [
 // 垃圾分类识别次数数据
 const garbageData = {
   categories: ["可回收物", "厨余垃圾", "有害垃圾", "其他垃圾", "易腐垃圾"],
-  values: [1280, 2560, 420, 980, 1850],
+  values: [80, 25, 42, 18, 35],
 };
 
 // 热门问答TOP10数据
 const qaData = [
-  { name: "垃圾分类投放时间", count: 589 },
-  { name: "物业费缴纳方式", count: 456 },
-  { name: "停车位申请流程", count: 398 },
-  { name: "装修报备要求", count: 321 },
-  { name: "宠物饲养规定", count: 289 },
-  { name: "快递柜使用说明", count: 256 },
-  { name: "社区活动报名", count: 210 },
-  { name: "门禁卡补办流程", count: 189 },
-  { name: "公共区域使用申请", count: 156 },
-  { name: "投诉建议反馈渠道", count: 123 },
+  { name: "垃圾分类投放时间", count: 58 },
+  { name: "物业费缴纳方式", count: 45 },
+  { name: "停车位申请流程", count: 38 },
+  { name: "装修报备要求", count: 32 },
+  { name: "宠物饲养规定", count: 28 },
+  { name: "快递柜使用说明", count: 56 },
+  { name: "社区活动报名", count: 20 },
+  { name: "门禁卡补办流程", count: 19 },
+  { name: "公共区域使用申请", count: 16 },
+  { name: "投诉建议反馈渠道", count: 13 },
 ];
 
 // 4. 初始化图表函数
